@@ -42,29 +42,24 @@ Funcionalidade: Chegou a hora de poupar! Mas quanto? Em quanto tempo? Como posso
     Dado que realizei a seleção de uma das opções do perfil
     Quando inserir o dado de entrada da coluna "APLICAR" com o valor <aplicar>
     E inserir o dado de entrada da coluna "POUPAR" com o valor <poupar>
+    E executo o clique no botão simular
     Então é possivel visualizar o formulário de simulação
 
     Exemplos: 
       | aplicar | poupar |
-      |   20.00 |  20.00 |
-      |   20.01 |  20.01 |
+      |   2000  |  2000  |
+      |   2001  |  2001  |
 
   Esquema do Cenário: Validar dados de entrada específicos nos campos de valores
     Dado que realizei a seleção de uma das opções do perfil
     Quando inserir o dado de entrada da coluna "APLICAR" com o valor <aplicar>
     E inserir o dado de entrada da coluna "POUPAR" com o valor <poupar>
+    E executo o clique no botão simular
     Então não é possivel visualizar o formulário de simulação
 
     Exemplos: 
       | aplicar | poupar |
-      |    0.00 |   0.00 |
-      |   19.99 |  19.99 |
-      |   20.00 |   0.00 |
-      |    0.00 |  20.00 |
-
-  Cenário: Validar botão REFAZER A SIMULAÇÃO
-    Dado que realizei a seleção de uma das opções do perfil
-    E realizei o preenchimento dos campos obrigatórios
-    Quando executo o clique no botão simular
-    Então é possivel visualizar o formulário de simulação
-    E é possível realizar clique no botão refazer a simulação
+      |       0 |      0 |
+      |    1999 |   1999 |
+      |    2000 |      0 |
+      |       0 |   2000 |

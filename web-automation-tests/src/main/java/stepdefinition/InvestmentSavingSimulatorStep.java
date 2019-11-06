@@ -2,7 +2,11 @@ package stepdefinition;
 
 import org.hamcrest.core.StringContains;
 import org.junit.Assert;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Wait;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import cucumber.TestContext;
 import framework.Configuration;
@@ -37,8 +41,8 @@ public class InvestmentSavingSimulatorStep {
 	@Dado("realizei o preenchimento dos campos obrigatórios")
 	public void addValueToRequiredFields() throws Throwable {
 		try {
-			this.investSimulationPageObject.valueApplyTextField().sendKeys("30.00");
-			this.investSimulationPageObject.valueInvestTextField().sendKeys("30.00");
+			this.investSimulationPageObject.valueApplyTextField().sendKeys("3000");
+			this.investSimulationPageObject.valueInvestTextField().sendKeys("3000");
 			this.investSimulationPageObject.timeFrameTextField().sendKeys("60");
 		} catch (Throwable error) {
 			Report.logFail("Erro ao preencher campos obrigatórios! >>> Erro encontrado: " + error,
@@ -77,8 +81,12 @@ public class InvestmentSavingSimulatorStep {
 	@Então("é possivel visualizar o formulário de simulação")
 	public void validFormsSimulation() throws Throwable {
 		try {
-			Assert.assertThat(this.investSimulationPageObject.simulationResultBlock().getText(),
-					StringContains.containsString(" você terá guardado"));
+			WebDriverWait wait = new WebDriverWait(this.investSimulationPageObject.getDriver(), 3);
+
+			WebElement button = wait.until(
+					ExpectedConditions.elementToBeClickable(this.investSimulationPageObject.repeatSimulationButton()));
+
+			Assert.assertTrue(button.isDisplayed());
 		} catch (Throwable error) {
 			Report.logFail("Não foi possível visualizar o formulário da simulação! >>> Erro encontrado: " + error,
 					ScreenShot.capture(this.investSimulationPageObject.getDriver()));
@@ -100,17 +108,18 @@ public class InvestmentSavingSimulatorStep {
 	}
 
 	@Quando("realizo a tentativa de inserir caracteres não permitidos nos campos de tipo {string}")
-	public void insertInvalidTypeCaracter(String string) throws Throwable {
+	public void insertInvalidTypeCaracter(String fieldType) throws Throwable {
 		try {
-			if (string == "VALOR") {
+			if (fieldType.toUpperCase().equals("VALOR")) {
 				this.investSimulationPageObject.valueApplyTextField().sendKeys("ç");
 				this.investSimulationPageObject.valueInvestTextField().sendKeys("ç");
-			} else if (string == "TEMPO") {
+			} else if (fieldType.toUpperCase().equals("TEMPO")) {
 				this.investSimulationPageObject.timeFrameTextField().sendKeys("-");
+				this.investSimulationPageObject.timeFrameTextField().sendKeys(Keys.TAB);
 			} else {
 				throw new java.lang.Error(
 						"Não foi possível identificar a variável do tipo: string >>> Valor atribuito a variável: "
-								+ string);
+								+ fieldType);
 			}
 		} catch (Throwable error) {
 			Report.logFail(
@@ -121,18 +130,23 @@ public class InvestmentSavingSimulatorStep {
 	}
 
 	@Então("não deve ser permitido inserir estes tipos de caracteres nos campos de tipo {string}")
-	public void valideInvalidTypeCaracter(String string) throws Throwable {
+	public void valideInvalidTypeCaracter(String fieldType) throws Throwable {
 		try {
-			if (string == "VALOR") {
+			WebDriverWait wait = new WebDriverWait(this.investSimulationPageObject.getDriver(), 3);
+			if (fieldType.toUpperCase().equals("VALOR")) {
+				wait.until(ExpectedConditions.visibilityOf(investSimulationPageObject.errorValueMessageLabel()));
+
 				Assert.assertEquals("Valor mínimo de 20.00",
 						investSimulationPageObject.errorValueMessageLabel().getText());
-			} else if (string == "TEMPO") {
+			} else if (fieldType.toUpperCase().equals("TEMPO")) {
+				wait.until(ExpectedConditions.visibilityOf(investSimulationPageObject.errorTimeFrameMessageLabel()));
+
 				Assert.assertEquals("Valor esperado não confere",
 						investSimulationPageObject.errorTimeFrameMessageLabel().getText());
 			} else {
 				throw new java.lang.Error(
 						"Não foi possível identificar a variável do tipo: string >>> Valor atribuito a variável: "
-								+ string);
+								+ fieldType);
 			}
 		} catch (Throwable error) {
 			Report.logFail(
@@ -144,20 +158,21 @@ public class InvestmentSavingSimulatorStep {
 
 	}
 
-	@Quando("inserir o dado de entrada da coluna {string} com o valor {double}")
-	public void insertEspecificValues(String string, Double double1) throws Throwable {
+	@Quando("inserir o dado de entrada da coluna {string} com o valor {int}")
+	public void insertEspecificValues(String column, int fieldValue) throws Throwable {
 		try {
-			if (string == "APLICAR") {
-				this.investSimulationPageObject.valueApplyTextField().sendKeys(String.valueOf(double1));
+			if (column.toUpperCase().equals("APLICAR")) {
+				this.investSimulationPageObject.valueApplyTextField().sendKeys(String.valueOf(fieldValue));
 
-			} else if (string == "POUPAR") {
-				this.investSimulationPageObject.valueInvestTextField().sendKeys(String.valueOf(double1));
+			} else if (column.contentEquals("POUPAR")) {
+				this.investSimulationPageObject.valueInvestTextField().sendKeys(String.valueOf(fieldValue));
 			} else {
 				throw new java.lang.Error(
 						"Não foi possível identificar a variável do tipo: string >>> Valor atribuito a variável: "
-								+ string);
+								+ column);
 			}
 
+			this.investSimulationPageObject.timeFrameTextField().clear();
 			this.investSimulationPageObject.timeFrameTextField().sendKeys("30");
 		} catch (Throwable error) {
 			Report.logFail(
@@ -172,33 +187,21 @@ public class InvestmentSavingSimulatorStep {
 	@Então("não é possivel visualizar o formulário de simulação")
 	public void não_é_possivel_visualizar_o_formulário_de_simulação() throws Throwable {
 		try {
-			Assert.assertThat(this.investSimulationPageObject.simulationResultBlock().getAttribute("aria-invalid"),
-					StringContains.containsString("true"));
+			WebDriverWait wait = new WebDriverWait(this.investSimulationPageObject.getDriver(), 3);
 
+			try {
+				wait.until(ExpectedConditions
+						.elementToBeClickable(this.investSimulationPageObject.repeatSimulationButton()));
+			} catch (Exception e) {
+			   //Expected exception, do nothing
+			}
+
+			Assert.assertFalse(this.investSimulationPageObject.repeatSimulationButton().isDisplayed());
 		} catch (Throwable error) {
 			Report.logFail(
 					"Erro ao validar se é possível vizualisar o formulário de simulação! >>> Erro encontrado: " + error,
 					ScreenShot.capture(this.investSimulationPageObject.getDriver()));
 			error.printStackTrace();
 		}
-	}
-
-	@Então("é possível realizar clique no botão refazer a simulação")
-	public boolean validateClickOnSimulationButton() throws Throwable {
-		try {
-			WebElement element = this.investSimulationPageObject.repeatSimulationButton();
-			if (element.isDisplayed() && element.isEnabled()) {
-				System.out.println("return true");
-				return true;
-
-			}
-		} catch (Throwable error) {
-			Report.logFail("Erro ao executar clique no botão Simular! >>> Erro encontrado: " + error,
-					ScreenShot.capture(this.investSimulationPageObject.getDriver()));
-			error.printStackTrace();
-		}
-		System.out.println("return false");
-		return false;
-
 	}
 }

@@ -49,7 +49,7 @@ public class InvestmentSavingSimulatorPageObjects {
 	}
 	
 	public WebElement simulationResultBlock() {
-		return this.driver.findElement(By.xpath("//div[@class=\"blocoResultadoSimulacao\"]"));
+		return this.driver.findElement(By.xpath("//div[@class=\"maisOpcoes\"]/span"));
 	}
 	
 	public WebElement formSimulationBlock() {

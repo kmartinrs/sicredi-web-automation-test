@@ -42,6 +42,15 @@ public class TestContext {
 			case "CHROME":
 				TestContext.driver = Drivers.getChromeDriver();
 				break;
+			case "FIREFOX":
+				TestContext.driver = Drivers.getFirefoxDriver();
+				break;
+			case "IE":
+				TestContext.driver = Drivers.getIEDriver();
+				break;
+			case "EDGE":
+				TestContext.driver = Drivers.getEdgeDriver();
+				break;
 			default:
 				break;
 			}
